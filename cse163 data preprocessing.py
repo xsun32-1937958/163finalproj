@@ -122,6 +122,11 @@ avgs_all = all_50.groupby(['Industry', 'Date'])['Close'].mean()
 avgs_all = avgs_all.to_frame().reset_index()
 fig3 = px.line(avgs_all, x='Date', y='Close', color='Industry')
 
+fig3.update_layout(title={'text': "Stock Prices in India (2014-2019)",
+                         'y':0.94,
+                         'x':0.5,
+                         'xanchor': 'center',
+                         'yanchor': 'top'})
 plot(fig3)
 
 # Plot industries with similar development trend
