@@ -14,10 +14,8 @@ from plotly.subplots import make_subplots
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import LSTM
+from tensorflow.keras.layers import Dense, LSTM
 import math
-from sklearn.metrics import mean_squared_error
 
 directory_csv = 'csv_files'
 filenames_csv = os.listdir(directory_csv)
@@ -54,9 +52,9 @@ IT_df_temp = [HCLTECH, INFY, TCS, TECHM, WIPRO]
 IT_df = pd.concat(IT_df_temp)
 
 
-# filter data for year 2018-2019 (covid-19 imapct eliminated)
+# filter data for year 2016-2018 (covid-19 imapct eliminated)
 def set_time(df):
-    time_mask = (df['Date'] <= '2019-12-31') & (df['Date'] >= '2016-1-1')
+    time_mask = (df['Date'] <= '2018-12-31') & (df['Date'] >= '2010-1-1')
     df = df[time_mask]
     return df
 
@@ -153,8 +151,9 @@ fig3.update_layout(title={'text': "Stock Prices in India (2016-2019)",
 
 # Third Research Question: 
 
-# reset the index so that the data is clear
-HCLTECH=HCLTECH.reset_index()['Close']
+# reset the index so that the data is clear and save the other data
+HCLTECH_other = HCLTECH
+#HCLTECH=HCLTECH.reset_index()['Close']
 
 # use min-max scalar to transform the values from 0 to 1
 scaler=MinMaxScaler(feature_range=(0,1))
@@ -179,26 +178,47 @@ def create_dataset(dataset, time_step=1):
     return np.array(dataX), np.array(dataY)
 
 time_step = 100
-X_train, y_train = create_dataset(train_data, time_step)
-X_test, ytest = create_dataset(test_data, time_step)
+X_train, Y_train = create_dataset(train_data, time_step)
+X_test, Y_test = create_dataset(test_data, time_step)
 
 X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
 X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
 # use a sequential model and add the layers of the LSTM model
+
 model=Sequential()
 model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
 model.add(LSTM(50,return_sequences=True))
 model.add(LSTM(50))
-model.add(Dense(1))
-model.compile(loss='mean_squared_error',optimizer='adam')
+model.add(Dense(1, activation='sigmoid'))
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_absolute_error'])
 
-# Predict both the X_train and the X_test 
-train_predict=model.predict(X_train)
-test_predict=model.predict(X_test)
-# scaler inverse transform to compare the root mean square
-train_predict=scaler.inverse_transform(train_predict)
-test_predict=scaler.inverse_transform(test_predict)
+model.summary()
 
-math.sqrt(mean_squared_error(y_train,train_predict))
+# train the model
+model.fit(X_train, Y_train, epochs=30, validation_data=(X_test, Y_test), verbose=1)
+# predict X_test 
+test_predicted = model.predict(X_test)
+# evaluate model for obtaining error (MSE)
+score = model.evaluate(X_test, Y_test, batch_size=1, verbose=0)
+# scaler inverse transform
+test_predicted = scaler.inverse_transform(test_predicted)
+Y_test = Y_test.reshape(1, -1)
+Y_test_untransformed = scaler.inverse_transform(Y_test)
+# result (MSE adn RMSE)
+Mean_Sqaured_Error = score[0]
+Root_Mean_Squared_Error = math.sqrt(Mean_Sqaured_Error)
 
+
+# plot the true v.s. predicted close prices for test dataset
+fig4 = px.line(test_predicted)
+fig4.add_trace(go.Scatter(y=Y_test_untransformed[0],
+                         mode='lines',
+                         line=dict(color='firebrick')))
+
+fig4.update_layout(title={'text': "Stock Prices in India (2016-2019)",
+                         'y':0.94,
+                         'x':0.5,
+                         'xanchor': 'center',
+                         'yanchor': 'top'})
+plot(fig4)
