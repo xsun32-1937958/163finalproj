@@ -1,3 +1,4 @@
+d1
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -152,11 +153,12 @@ fig3.update_layout(title={'text': "Stock Prices in India (2016-2019)",
 # Third Research Question: 
 
 # reset the index so that the data is clear and save the other data
-HCLTECH_other = HCLTECH
-#HCLTECH=HCLTECH.reset_index()['Close']
+#HCLTECH_other = HCLTECH
+HCLTECH=HCLTECH.reset_index()['Close']
 
 # use min-max scalar to transform the values from 0 to 1
 scaler=MinMaxScaler(feature_range=(0,1))
+#for i in range(0,)
 HCLTECH=scaler.fit_transform(np.array(HCLTECH).reshape(-1,1))
 
 # divide data into train data and test data by 7:3 ratio
@@ -184,19 +186,19 @@ X_test, Y_test = create_dataset(test_data, time_step)
 X_train =X_train.reshape(X_train.shape[0],X_train.shape[1] , 1)
 X_test = X_test.reshape(X_test.shape[0],X_test.shape[1] , 1)
 
-# use a sequential model and add the layers of the LSTM model
 
+# use a sequential model and add the layers of the LSTM model
 model=Sequential()
-model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
-model.add(LSTM(50,return_sequences=True))
-model.add(LSTM(50))
-model.add(Dense(1, activation='sigmoid'))
+#model.add(LSTM(50,return_sequences=True,input_shape=(100,1)))
+#model.add(LSTM(50,return_sequences=True))
+model.add(LSTM(50, input_shape=(100,1)))
+model.add(Dense(1, activation='linear'))
 model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mean_absolute_error'])
 
 model.summary()
 
 # train the model
-model.fit(X_train, Y_train, epochs=30, validation_data=(X_test, Y_test), verbose=1)
+model.fit(X_train, Y_train, epochs=10, validation_data=(X_test, Y_test), verbose=1)
 # predict X_test 
 test_predicted = model.predict(X_test)
 # evaluate model for obtaining error (MSE)
@@ -214,9 +216,10 @@ Root_Mean_Squared_Error = math.sqrt(Mean_Sqaured_Error)
 fig4 = px.line(test_predicted)
 fig4.add_trace(go.Scatter(y=Y_test_untransformed[0],
                          mode='lines',
-                         line=dict(color='firebrick')))
+                         line=dict(color='firebrick'),
+                         name='Close Prices'))
 
-fig4.update_layout(title={'text': "Stock Prices in India (2016-2019)",
+fig4.update_layout(title={'text': "LSTM Prediction of Stock Prices",
                          'y':0.94,
                          'x':0.5,
                          'xanchor': 'center',
