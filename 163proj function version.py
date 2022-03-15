@@ -1,9 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
-Created on Mon Mar 14 22:15:13 2022
-
-@author: hsy
+CSE 163 AH
+Final Project
+Shiyu Han, Zhiheng Liu, Selina Sun
+This file utilizes the Indian stock market dataset and conducts data analysis
+via data visualizations and machine learning models. The main purpose is to 
+examine trend of stock prices within the Indian IT industry and to create
+machine learning models to predict stock prices for a particular stock HCLTECH.
+Libraries Pandas, Plotly, Sklearn, Tensorflow, and Math are used.
 """
 import os
 import pandas as pd
