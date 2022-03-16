@@ -115,26 +115,24 @@ def plot_all(all_50, meta_data):
     plot(fig3)
 
 
-def ml_prep(HCLTECH):
+def ml_prep(stock):
     '''
     This function resets the index so that the data is clear and saves the
     other data. It returns the reset dataset and the transforming scaler
     '''
-    print(HCLTECH)
-    HCLTECH = HCLTECH.reset_index()['Close']
-    print(HCLTECH)
+    stock = stock.reset_index()['Close']
     scaler = MinMaxScaler(feature_range=(0, 1))
-    HCLTECH = scaler.fit_transform(np.array(HCLTECH).reshape(-1, 1))
-    return HCLTECH, scaler
+    stock = scaler.fit_transform(np.array(stock).reshape(-1, 1))
+    return stock, scaler
 
 
-def ml_split(HCLTECH):
+def ml_split(stock):
     '''
     This function divides data into train data and test data by 7:3 ratio
     '''
-    training_size = int(len(HCLTECH)*0.7)
-    train_data, test_data = HCLTECH[0:training_size, :], \
-        HCLTECH[training_size:len(HCLTECH), :1]
+    training_size = int(len(stock)*0.7)
+    train_data, test_data = stock[0:training_size, :], \
+        stock[training_size:len(stock), :1]
     return train_data, test_data
 
 
@@ -242,8 +240,8 @@ def main():
     print(MIN_daily_increase)
 
     # Second Research Question:
-    # plot_IT(IT_df)
-    # plot_all(all_50, meta_data)
+    plot_IT(IT_df)
+    plot_all(all_50, meta_data)
 
     # Third Research Question:
     HCLTECH, scaler = ml_prep(HCLTECH)
@@ -253,13 +251,13 @@ def main():
         X_test, Y_test = get_train_test(train_data, test_data, time_step)
     # first lstm model with 4 layers
     title = "LSTM Prediction of Stock Prices (4 layers)"
-    # test_predicted, Y_test_untransformed = LSTM_ML(X_train,
-    #                                               Y_train,
-    #                                               X_test,
-    #                                               Y_test,
-    #                                               scaler,
-    #                                               False)
-    # plot_predict_cp(test_predicted, Y_test_untransformed, title)
+    test_predicted, Y_test_untransformed = LSTM_ML(X_train,
+                                                   Y_train,
+                                                   X_test,
+                                                   Y_test,
+                                                   scaler,
+                                                   False)
+    plot_predict_cp(test_predicted, Y_test_untransformed, title)
     # second lstm model with 2 layers
     title = "LSTM Prediction of Stock Prices (2 layers)"
     test_predicted_2, Y_test_untransformed_2 = LSTM_ML(X_train,
